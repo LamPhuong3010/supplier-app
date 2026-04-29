@@ -5,14 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hệ Thống Quản Lý Nhà Cung Cấp AI</title>
     <link rel="stylesheet" href="style.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+    <!-- Cập nhật thư viện CDN ổn định để chạy trên GitHub Pages -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
     <div class="container">
         <header>
             <div class="header-left">
+                <!-- Đảm bảo file logo này có trong thư mục gốc trên GitHub -->
                 <img src="C.P_logo.png" alt="C.P. Logo" class="cp-logo-img">
             </div>
 
@@ -29,14 +32,13 @@
             </div>
         </header>
 
+        <!-- Thanh điều khiển đã loại bỏ nút Upload để chạy tự động -->
         <div class="controls-bar">
             <div class="controls">
-                <label class="custom-file-upload">
-                    <input type="file" id="folder-input" webkitdirectory directory multiple onchange="scanFolder(event)">
-                    📁 UPLOAD
-                </label>
-                <input type="text" id="ncc-search" list="ncc-options" placeholder="Gõ tên NCC để tìm..." oninput="onNCCSearch()">
-                <datalist id="ncc-options"></datalist>
+                <div class="search-box">
+                    <input type="text" id="ncc-search" list="ncc-options" placeholder="Gõ tên NCC để tìm..." oninput="onNCCSearch()">
+                    <datalist id="ncc-options"></datalist>
+                </div>
                 
                 <select id="date-select">
                     <option value="">-- Chọn Ngày --</option>
@@ -50,7 +52,7 @@
 
         <section class="card">
             <h2>1. Thông tin nhà cung cấp</h2>
-            <div id="supplier-info" class="content-area">Đang chờ dữ liệu...</div>
+            <div id="supplier-info" class="content-area">Đang khởi tạo dữ liệu từ hệ thống...</div>
         </section>
 
         <section class="card">
@@ -59,6 +61,7 @@
                 <button class="slider-btn prev" onclick="moveSlider(-1)" style="position: absolute; left: 5px; z-index: 10; background: rgba(0,242,255,0.3); color: white; border: none; padding: 15px 10px; cursor: pointer;">&#10094;</button>
                 
                 <div id="factory-images" style="display: flex; overflow-x: auto; scroll-behavior: smooth; gap: 15px; scrollbar-width: none; -ms-overflow-style: none;">
+                    <!-- Ảnh sẽ tự động load vào đây -->
                 </div>
                 
                 <button class="slider-btn next" onclick="moveSlider(1)" style="position: absolute; right: 5px; z-index: 10; background: rgba(0,242,255,0.3); color: white; border: none; padding: 15px 10px; cursor: pointer;">&#10095;</button>
@@ -78,12 +81,13 @@
             <h2>4. Hồ sơ đánh giá & Khắc phục</h2>
             <div class="file-links">
                 <div id="pdf-result">
-                    <p style="color: #888; font-style: italic;">Chưa có tệp tin PDF nào.</p>
+                    <p style="color: #888; font-style: italic;">Chưa có tệp tin PDF nào được chọn.</p>
                 </div>
             </div>
         </section>
     </div>
 
+    <!-- Modal xem ảnh phóng to -->
     <div id="imageModal" class="modal">
         <span class="close" onclick="closeModal()">&times;</span>
         
@@ -95,6 +99,7 @@
         </div>
     </div>
 
+    <!-- Gọi script xử lý dữ liệu tự động -->
     <script src="script.js"></script>
 </body>
 </html>
