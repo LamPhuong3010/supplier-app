@@ -11,7 +11,7 @@ let zoomScale = 1;
 // Cấu hình đường dẫn GitHub của bạn
 const GITHUB_USER = "LamPhuong3010";
 const GITHUB_REPO = "supplier-app";
-const BASE_URL = `https://raw.githubusercontent/${GITHUB_USER}/${GITHUB_REPO}/main/data/`;
+const BASE_URL = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/main/data/`;
 
 /* ============================================================
    1. TỰ ĐỘNG TẢI DỮ LIỆU KHI TRANG WEB MỞ (INIT)
@@ -188,6 +188,5 @@ function renderInfo(ncc) {
         container.innerHTML = html + '</div>';
     }
 }
-
 // --- GIỮ NGUYÊN CÁC HÀM: openModal, changeImage, renderChart TỪ CODE CŨ CỦA BẠN ---
 // (Copy lại toàn bộ phần Modal và Chart.js của bạn vào đây)
