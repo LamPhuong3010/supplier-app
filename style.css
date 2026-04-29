@@ -1,0 +1,362 @@
+/* --- TOÀN BỘ GIAO DIỆN SUPPLIER INTELLIGENCE - ĐÃ FIX LỖI HIỂN THỊ --- */
+
+:root {
+    --accent-color: #007bff;
+    --success-color: #28a745;
+    --card-bg: rgba(255, 255, 255, 0.96); 
+    --text-main: #1a1a1a;
+    --text-muted: #555555;
+    --border-color: rgba(0, 0, 0, 0.1);
+}
+
+/* 1. THIẾT LẬP NỀN HÌNH ẢNH SẮC NÉT */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    color: var(--text-main);
+    min-height: 100vh;
+}
+
+body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url('Factory image.png') no-repeat center center;
+    background-size: cover;
+    filter: blur(1px);
+    opacity: 1; 
+    z-index: -2;
+}
+
+body::after {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.05);
+    z-index: -1;
+}
+
+/* 2. THU NHỎ CHIỀU RỘNG TỔNG THỂ */
+.container {
+    max-width: 1050px; 
+    margin: 0 auto;
+    padding: 10px 20px;
+}
+
+/* 3. HEADER GỌN GÀNG */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 30px; 
+    background: transparent;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    margin-bottom: 15px;
+}
+
+.header-left { flex: 1; display: flex; justify-content: flex-start; }
+.header-center { flex: 2; text-align: center; }
+.header-right { flex: 1; display: flex; justify-content: flex-end; }
+
+.cp-logo-img {
+    height: 65px; 
+    width: auto;
+}
+
+.main-heading {
+    font-size: 26px; 
+    font-weight: 800;
+    margin: 0;
+}
+
+.ai-text { color: var(--accent-color); text-shadow: none; }
+
+.sda-dept-text { text-align: center; line-height: 1.1; }
+.sda-dept-text .main-title {
+    font-size: 19px;
+    font-weight: bold;
+    letter-spacing: 2px;
+    margin: 0;
+}
+.sda-dept-text .sub-title, .sda-dept-text .dept-title {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+/* 4. CÁC THẺ CARD */
+.card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 15px 20px; 
+    margin-bottom: 15px; 
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+    border: 1px solid var(--border-color);
+    backdrop-filter: blur(10px);
+}
+
+.card h3 {
+    color: #1a1a1a !important;   /* Ép về màu đen than của mục 1 */
+    font-weight: 700 !important; /* Độ đậm tiêu chuẩn */
+    font-size: 1.55rem;           /* Kích thước chữ đồng nhất */
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #f0f0f0;
+    text-align: left;
+    display: block;
+}
+
+/* 5. ĐIỀU KHIỂN */
+.controls-bar {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+input, select {
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-size: 13px;
+}
+
+#refresh-btn {
+    background: linear-gradient(135deg, var(--accent-color), var(--success-color));
+    color: white;
+    border: none;
+    padding: 8px 25px;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+/* 6. BIỂU ĐỒ - ĐÃ FIX LỖI TRÀN NĂM VÀ SÁT CHÚ THÍCH */
+.chart-container {
+    position: relative;
+    margin: 10px auto 0 auto !important;
+    height: 420px !important; /* Chiều cao cân đối để không đẩy năm xuống quá thấp */
+    width: 100%;
+    padding-bottom: 45px !important; /* Tạo khoảng trống đủ cho các nhãn năm (2019, 2022...) */
+    overflow: visible !important; /* Cho phép số trên đỉnh cột và năm hiển thị đầy đủ */
+}
+
+#performanceChart {
+    width: 100% !important;
+    height: 100% !important;
+    filter: none !important;
+}
+
+/* 7. GRID THÔNG TIN THU NHỎ */
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.info-item {
+    background: rgba(0, 123, 255, 0.05);
+    padding: 10px; 
+    border-radius: 8px;
+    border: 1px solid rgba(0, 123, 255, 0.1);
+}
+
+.info-label {
+    font-size: 10px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    font-weight: bold;
+    margin-bottom: 2px;
+    display: block;
+}
+
+.info-value {
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.full-width { grid-column: span 3; }
+
+/* ============================================================
+   8. THIẾT KẾ GALLERY ẢNH THU NHỎ (SCROLL NGANG) - MỚI
+   ============================================================ */
+
+/* 1. Vùng chứa lớn để định vị mũi tên */
+.factory-images-gallery {
+    position: relative;
+    width: 100%;
+    margin-bottom: 20px;
+    background: transparent;
+}
+
+/* 2. Khung chứa các ảnh nhỏ (Thumbnail Strip) */
+#factory-images {
+    display: flex;
+    flex-wrap: nowrap; /* Ép tất cả ảnh nằm trên một hàng */
+    gap: 15px;         /* Khoảng cách giữa các ảnh */
+    overflow-x: auto; /* Cho phép cuộn ngang */
+    padding: 10px;
+    background: #f9f9f9;
+    border-radius: 10px;
+    
+    /* Ẩn thanh cuộn để nhìn đẹp hơn (Tùy chọn) */
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+}
+
+/* Ẩn thanh cuộn trên Chrome/Safari */
+#factory-images::-webkit-scrollbar { display: none; }
+
+/* 3. Định dạng từng ảnh nhỏ (Preview) */
+.thumb-img {
+    width: 250px; 
+    height: 180px;
+    object-fit: cover; /* Giữ nguyên tỷ lệ, không bị kéo giãn */
+    border-radius: 8px;
+    cursor: zoom-in; /* Con trỏ hình kính lúp */
+    border: 3px solid #ddd;
+    transition: 0.3s ease; /* Hiệu ứng mượt mà */
+    flex-shrink: 0;      /* Ngăn ảnh bị bóp méo khi cuộn */
+}
+
+/* Hiệu ứng khi di chuột vào ảnh nhỏ */
+.thumb-img:hover {
+    filter: brightness(0.85); /* Tối nhẹ */
+    transform: translateY(-2px); /* Nhích lên */
+    border-color: #007bff;
+}
+
+/* 4. Định dạng vùng PDF (Màu chữ đen như yêu cầu cũ) */
+.file-links a div {
+    color: #1a1a1a !important; 
+    padding: 12px;
+    font-size: 13px;
+    background: #f0f9ff !important;
+}
+
+/* ============================================================
+   9. MODAL XEM ẢNH PHÓNG TO (QUAN TRỌNG NHẤT)
+   ============================================================ */
+
+/* Lớp nền đen bao phủ toàn màn hình khi xem ảnh */
+.modal {
+    display: none; /* Phải có dòng này để mặc định nó ẩn đi */
+    position: fixed;
+    z-index: 9999;
+    left: 0; top: 0;
+    width: 100%; height: 100%;
+    background-color: rgba(0,0,0,0.9);
+}
+/* Nút đóng (X) */
+.close {
+    position: absolute;
+    top: 20px;
+    right: 35px;
+    color: #f1f1f1;
+    font-size: 40px;
+    font-weight: bold;
+    cursor: pointer;
+    z-index: 10002;
+}
+
+.close:hover { color: #bbb; }
+
+/* Khung giới hạn ảnh để lăn chuột zoom không bị tràn */
+.modal-content-wrapper {
+    width: 90%;
+    height: 90%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden; /* Cắt phần ảnh thừa khi zoom to */
+    position: relative;
+}
+
+/* Ảnh chính trong Modal */
+#imgFull {
+    max-width: 95%;
+    max-height: 95%;
+    object-fit: contain;
+    transition: transform 0.1s ease-out;
+    cursor: grab;
+    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+}
+
+#imgFull:active { cursor: grabbing; }
+
+/* Nút điều hướng ảnh (Trái/Phải) */
+.nav-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+    border: none;
+    font-size: 40px;
+    width: 60px;
+    height: 60px;
+    cursor: pointer;
+    border-radius: 50%;
+    z-index: 10001;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.2s;
+}
+
+.nav-btn:hover {
+    background: rgba(255, 255, 255, 0.4);
+    scale: 1.1;
+}
+
+.prev { left: 30px; }
+.next { right: 30px; }
+
+/* Ẩn vùng PDF khi cần */
+.hidden { display: none; }
+/* Ép ảnh trong khu vực danh sách luôn nhỏ (Preview) */
+#factory-images {
+    display: flex;
+    flex-wrap: wrap; /* Cho phép xuống dòng nếu nhiều ảnh */
+    justify-content: flex-start;
+    padding: 10px;
+    background: #f9f9f9;
+    border-radius: 10px;
+}
+
+#factory-images img {
+    width: 200px !important; /* Độ rộng cố định cho ảnh nhỏ */
+    height: 150px !important; /* Chiều cao cố định */
+    transition: 0.3s;
+}
+
+#factory-images img:hover {
+    transform: scale(1.05);
+    border-color: #007bff;
+}
+
+/* Sửa lỗi màn hình đen Modal */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 10000;
+    left: 0; top: 0;
+    width: 100%; height: 100%;
+    background-color: rgba(0,0,0,0.95); /* Đen sâu hơn để nổi bật ảnh */
+    justify-content: center;
+    align-items: center;
+}
+
+#imgFull {
+    max-width: 90%;
+    max-height: 90%;
+    object-fit: contain; /* Đảm bảo không bị méo ảnh khi hiện to */
+}

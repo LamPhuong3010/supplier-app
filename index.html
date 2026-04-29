@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ Thống Quản Lý Nhà Cung Cấp AI</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-left">
+                <img src="C.P_logo.png" alt="C.P. Logo" class="cp-logo-img">
+            </div>
+
+            <div class="header-center">
+                <h1 class="main-heading ai-text">SUPPLIER DATABASE INTELLIGENCE</h1>
+            </div>
+            
+            <div class="header-right">
+                <div class="sda-dept-text">
+                    <p class="main-title">SD&A</p>
+                    <p class="sub-title">SOURCING DEVELOPMENT & AUDIT</p>
+                    <p class="dept-title">DEPARTMENT</p>
+                </div>
+            </div>
+        </header>
+
+        <div class="controls-bar">
+            <div class="controls">
+                <label class="custom-file-upload">
+                    <input type="file" id="folder-input" webkitdirectory directory multiple onchange="scanFolder(event)">
+                    📁 UPLOAD
+                </label>
+                <input type="text" id="ncc-search" list="ncc-options" placeholder="Gõ tên NCC để tìm..." oninput="onNCCSearch()">
+                <datalist id="ncc-options"></datalist>
+                
+                <select id="date-select">
+                    <option value="">-- Chọn Ngày --</option>
+                </select>
+
+                <button id="refresh-btn" onclick="displayData()">
+                    <span class="icon">⚡</span> Hiển thị
+                </button>
+            </div>
+        </div>
+
+        <section class="card">
+            <h2>1. Thông tin nhà cung cấp</h2>
+            <div id="supplier-info" class="content-area">Đang chờ dữ liệu...</div>
+        </section>
+
+        <section class="card">
+            <h2>2. Hình ảnh nhà xưởng</h2>
+            <div class="slider-wrapper" style="position: relative; display: flex; align-items: center; background: #111; border-radius: 10px; padding: 10px; overflow: hidden;">
+                <button class="slider-btn prev" onclick="moveSlider(-1)" style="position: absolute; left: 5px; z-index: 10; background: rgba(0,242,255,0.3); color: white; border: none; padding: 15px 10px; cursor: pointer;">&#10094;</button>
+                
+                <div id="factory-images" style="display: flex; overflow-x: auto; scroll-behavior: smooth; gap: 15px; scrollbar-width: none; -ms-overflow-style: none;">
+                </div>
+                
+                <button class="slider-btn next" onclick="moveSlider(1)" style="position: absolute; right: 5px; z-index: 10; background: rgba(0,242,255,0.3); color: white; border: none; padding: 15px 10px; cursor: pointer;">&#10095;</button>
+            </div>
+        </section>
+
+        <section class="card">
+            <div class="section">
+                <h3>3. Biểu đồ kết quả hàng năm</h3>
+                <div style="height: 350px; width: 100%; position: relative;">
+                    <canvas id="performanceChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <section class="card">
+            <h2>4. Hồ sơ đánh giá & Khắc phục</h2>
+            <div class="file-links">
+                <div id="pdf-result">
+                    <p style="color: #888; font-style: italic;">Chưa có tệp tin PDF nào.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <div id="imageModal" class="modal">
+        <span class="close" onclick="closeModal()">&times;</span>
+        
+        <button class="nav-btn prev" onclick="changeImage(-1)">&#10094;</button>
+        <button class="nav-btn next" onclick="changeImage(1)">&#10095;</button>
+
+        <div class="modal-content-wrapper" onwheel="handleZoom(event)">
+            <img id="imgFull" src="" style="transform: scale(1);">
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
