@@ -1,5 +1,5 @@
 /* ============================================================
-   1. CẤU HÌNH THÔNG TIN GITHUB
+   1. CẤU HÌNH HỆ THỐNG
    ============================================================ */
 const GITHUB_USER = "LamPhuong3010";
 const GITHUB_REPO = "supplier-app";
@@ -10,9 +10,7 @@ let supplierExcelData = [];
 let chartExcelData = [];    
 let currentImagesList = []; 
 let currentImgIndex = 0;
-let zoomScale = 1;
 
-// Tự động chạy khi web tải xong
 window.addEventListener('DOMContentLoaded', async () => {
     console.log("Đang khởi tạo dữ liệu từ GitHub...");
     await loadInitialData();
@@ -55,7 +53,7 @@ function initDatabase() {
     supplierExcelData.forEach(item => {
         const name = String(item["Supplier name"] || "").trim();
         if (name) {
-            // Lấy danh sách ngày/năm từ file biểu đồ để link vào mục Chọn Ngày
+            // Lấy danh sách ngày/tháng/năm từ cột "Year" trong file biểu đồ
             const dates = chartExcelData
                 .filter(row => String(row["Supplier Name"]).trim() === name)
                 .map(row => String(row["Year"]).trim())
@@ -71,13 +69,8 @@ function initDatabase() {
 }
 
 /* ============================================================
-   3. XỬ LÝ SỰ KIỆN GIAO DIỆN
+   3. XỬ LÝ GIAO DIỆN
    ============================================================ */
-function toSlug(str) {
-    if (!str) return "";
-    return str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d").replace(/[^a-z0-9]/g, "");
-}
-
 function onNCCSearch() {
     const searchVal = document.getElementById('ncc-search').value;
     const dateSelect = document.getElementById('date-select');
@@ -135,6 +128,12 @@ function renderChart(ncc) {
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     
+    // Kiểm tra thư viện Chart có tồn tại không
+    if (typeof Chart === 'undefined') {
+        console.error("Thư viện Chart.js chưa được tải!");
+        return;
+    }
+
     if (window.myChart instanceof Chart) { window.myChart.destroy(); }
 
     const history = chartExcelData.filter(item => String(item["Supplier Name"]).trim() === ncc);
@@ -144,29 +143,15 @@ function renderChart(ncc) {
         type: 'bar',
         data: {
             labels: history.map(h => h["Year"]),
-            datasets: [
-                {
-                    label: 'PU006 (%)',
-                    data: history.map(h => parseFloat(h["PU006"]) || 0),
-                    backgroundColor: 'rgba(0, 242, 255, 0.6)',
-                    yAxisID: 'y'
-                },
-                {
-                    label: 'Tần suất',
-                    type: 'line',
-                    data: history.map(h => parseFloat(h["Likelihood ratio"]) || 0),
-                    borderColor: '#ff4d4d',
-                    yAxisID: 'yRight'
-                }
-            ]
+            datasets: [{
+                label: 'PU006 (%)',
+                data: history.map(h => parseFloat(h["PU006"]) || 0),
+                backgroundColor: 'rgba(0, 242, 255, 0.6)'
+            }]
         },
         options: {
             responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                y: { beginAtZero: true, position: 'left' },
-                yRight: { beginAtZero: true, position: 'right', grid: { drawOnChartArea: false } }
-            }
+            maintainAspectRatio: false
         }
     });
 }
@@ -174,7 +159,7 @@ function renderChart(ncc) {
 async function renderMedia(ncc, date) {
     const imgContainer = document.getElementById('factory-images');
     const pdfContainer = document.getElementById('pdf-result');
-    imgContainer.innerHTML = '';
+    imgContainer.innerHTML = 'Đang quét folder...';
     pdfContainer.innerHTML = '';
     currentImagesList = [];
 
@@ -183,43 +168,50 @@ async function renderMedia(ncc, date) {
         return;
     }
 
-    const photoUrl = `${BASE_URL}${encodeURIComponent(ncc)}/${encodeURIComponent(date)}/Factory%20image.png`;
-    const pdfUrl = `${BASE_URL}${encodeURIComponent(ncc)}/${encodeURIComponent(date)}/Evaluation_Report.pdf`;
+    const folderPath = `${encodeURIComponent(ncc)}/${encodeURIComponent(date)}/`;
+    
+    // Thử tìm file ảnh với các định dạng khác nhau (ưu tiên .jpg)
+    const imageFiles = ['Factory image.jpg', 'Factory image.jpeg', 'Factory image.png'];
+    let imageFound = false;
 
-    // Thử tải ảnh
-    try {
-        const resImg = await fetch(photoUrl);
-        if (resImg.ok) {
-            currentImagesList.push(photoUrl);
-            imgContainer.innerHTML = `<img src="${photoUrl}" class="thumb-img" onclick="openModal(0)" style="max-height:200px; border-radius:8px; cursor:pointer;">`;
-        } else {
-            imgContainer.innerHTML = '<p style="color:gray;">Không có Factory image.png</p>';
-        }
-    } catch (e) { console.error("Lỗi load ảnh"); }
+    for (const fileName of imageFiles) {
+        const photoUrl = `${BASE_URL}${folderPath}${encodeURIComponent(fileName)}`;
+        try {
+            const res = await fetch(photoUrl, { method: 'HEAD' });
+            if (res.ok) {
+                currentImagesList.push(photoUrl);
+                imgContainer.innerHTML = `<img src="${photoUrl}" class="thumb-img" onclick="openModal(0)" style="max-height:250px; border-radius:8px; cursor:pointer; border: 2px solid #00f2ff;">`;
+                imageFound = true;
+                break; 
+            }
+        } catch (e) {}
+    }
 
-    // Thử tải PDF
+    if (!imageFound) {
+        imgContainer.innerHTML = `<p style="color:#888;">Không thấy ảnh (.jpg/.png) trong folder ${date}</p>`;
+    }
+
+    // Xử lý file PDF
+    const pdfUrl = `${BASE_URL}${folderPath}Evaluation_Report.pdf`;
     try {
-        const resPdf = await fetch(pdfUrl);
+        const resPdf = await fetch(pdfUrl, { method: 'HEAD' });
         if (resPdf.ok) {
-            pdfContainer.innerHTML = `<a href="${pdfUrl}" target="_blank" style="color:#00f2ff; text-decoration:none;">📄 Xem báo cáo đánh giá (${date})</a>`;
+            pdfContainer.innerHTML = `<a href="${pdfUrl}" target="_blank" style="display:inline-block; padding:10px; background:#00334e; color:#00f2ff; border-radius:5px; text-decoration:none;">📄 Xem Hồ sơ đánh giá & Khắc phục (${date})</a>`;
         } else {
-            pdfContainer.innerHTML = '<p style="color:gray;">Không có file PDF.</p>';
+            pdfContainer.innerHTML = '<p style="color:gray;">Không có file PDF cho ngày này.</p>';
         }
-    } catch (e) { }
+    } catch (e) {}
 }
 
 /* ============================================================
-   5. XỬ LÝ MODAL ẢNH (ZOOM & NAVIGATION)
+   5. XỬ LÝ MODAL ẢNH (PHÓNG TO)
    ============================================================ */
 function openModal(index) {
-    currentImgIndex = index;
-    zoomScale = 1;
     const modal = document.getElementById("imageModal");
     const modalImg = document.getElementById("imgFull");
     if (modal && modalImg) {
         modal.style.display = "flex";
-        modalImg.src = currentImagesList[currentImgIndex];
-        modalImg.style.transform = `scale(${zoomScale})`;
+        modalImg.src = currentImagesList[index];
     }
 }
 
@@ -227,21 +219,6 @@ function closeModal() {
     document.getElementById("imageModal").style.display = "none";
 }
 
-function changeImage(step) {
-    currentImgIndex += step;
-    if (currentImgIndex >= currentImagesList.length) currentImgIndex = 0;
-    if (currentImgIndex < 0) currentImgIndex = currentImagesList.length - 1;
-    document.getElementById("imgFull").src = currentImagesList[currentImgIndex];
-}
-
-function handleZoom(e) {
-    e.preventDefault();
-    zoomScale += e.deltaY * -0.001;
-    zoomScale = Math.min(Math.max(.5, zoomScale), 3);
-    document.getElementById("imgFull").style.transform = `scale(${zoomScale})`;
-}
-
-// Hàm hỗ trợ slider di chuyển ngang
 function moveSlider(direction) {
     const container = document.getElementById('factory-images');
     container.scrollLeft += direction * 200;
