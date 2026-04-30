@@ -123,35 +123,119 @@ function renderInfo(ncc) {
     }
 }
 
+// Đăng ký plugin hiển thị nhãn
+Chart.register(ChartDataLabels);
 function renderChart(ncc) {
     const canvas = document.getElementById('performanceChart');
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
-    
-    // Kiểm tra thư viện Chart có tồn tại không
-    if (typeof Chart === 'undefined') {
-        console.error("Thư viện Chart.js chưa được tải!");
-        return;
-    }
-
-    if (window.myChart instanceof Chart) { window.myChart.destroy(); }
+    if (window.myChart instanceof Chart) window.myChart.destroy();
 
     const history = chartExcelData.filter(item => String(item["Supplier Name"]).trim() === ncc);
-    if (history.length === 0) return;
 
     window.myChart = new Chart(ctx, {
-        type: 'bar',
         data: {
-            labels: history.map(h => h["Year"]),
-            datasets: [{
-                label: 'PU006 (%)',
-                data: history.map(h => parseFloat(h["PU006"]) || 0),
-                backgroundColor: 'rgba(0, 242, 255, 0.6)'
-            }]
+            labels: history.map(h => String(h["Year"] || "").trim().substring(0, 4)),
+            datasets: [
+                {
+                    type: 'bar',
+                    label: 'PU006 (%)',
+                    data: history.map(h => h["PU006"]),
+                    backgroundColor: '#00bfff', // Xanh đậm rõ ràng
+                    datalabels: {
+                        anchor: 'end', align: 'top', offset: 5,
+                        formatter: v => (v * 100).toFixed(0) + '%',
+                        color: '#00bfff', font: { weight: 'bold', size: 12 }
+                    }
+                },
+                {
+                    type: 'bar',
+                    label: 'ISO (%)',
+                    data: history.map(h => h["ISO"]),
+                    backgroundColor: '#3cb371', // Xanh lá đậm
+                    datalabels: {
+                        anchor: 'end', align: 'top', offset: 5,
+                        formatter: v => (v * 100).toFixed(0) + '%',
+                        color: '#3cb371', font: { weight: 'bold', size: 12 }
+                    }
+                },
+                {
+                    type: 'line',
+                    label: 'Social',
+                    data: history.map(h => h["Social"]),
+                    borderColor: '#ffa500',
+                    backgroundColor: 'rgba(255, 165, 0, 0.1)', // Vùng màu cam mờ
+                    fill: true, // Vẽ kiểu Area cho dễ nhìn
+                    tension: 0.4,
+                    yAxisID: 'ySocial',
+                    datalabels: {
+                        align: 'right', offset: 10,
+                        color: '#ffa500', font: { weight: 'bold' }
+                    }
+                },
+                {
+                    type: 'line',
+                    label: 'Tần suất',
+                    data: history.map(h => h["Likelihood ration"]),
+                    borderColor: '#ff4500',
+                    borderDash: [5, 5],
+                    yAxisID: 'y1',
+                    datalabels: {
+                        align: 'top', color: '#ff4500',
+                        formatter: v => v + ' năm'
+                    }
+                },
+                {
+                    type: 'line',
+                    label: 'Red Point',
+                    data: history.map(h => h["Red point"]),
+                    pointBackgroundColor: '#ff0000',
+                    pointStyle: 'rectRot',
+                    pointRadius: 15,
+                    showLine: false,
+                    yAxisID: 'y1',
+                    datalabels: {
+                        color: '#fff', font: { weight: 'bold' },
+                        align: 'center'
+                    }
+                }
+            ]
         },
         options: {
             responsive: true,
-            maintainAspectRatio: false
+            maintainAspectRatio: false,
+            layout: { padding: { top: 40, bottom: 20 } },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 1.3, // Để trống chỗ trên đầu cho con số hiện lên
+                    ticks: { callback: v => (v * 100).toFixed(0) + '%', color: '#666' }
+                },
+                ySocial: { display: false, max: 120 }, // Trục ẩn cho Social
+                y1: {
+                    position: 'right',
+                    beginAtZero: true,
+                    ticks: { color: '#ff4500' },
+                    grid: { drawOnChartArea: false }
+                },
+                x: { ticks: { color: '#333', font: { weight: 'bold' } } }
+            },
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top',
+                    labels: {
+                        color: '#333', // Đổi sang màu tối để nhìn rõ chú thích
+                        font: { size: 14, weight: 'bold' },
+                        usePointStyle: true,
+                        padding: 25
+                    }
+                },
+                datalabels: {
+                    display: true,
+                    clip: false // Không để mất số khi chạm rìa
+                }
+            }
         }
     });
 }
@@ -159,67 +243,57 @@ function renderChart(ncc) {
 async function renderMedia(ncc, date) {
     const imgContainer = document.getElementById('factory-images');
     const pdfContainer = document.getElementById('pdf-result');
-    imgContainer.innerHTML = 'Đang quét folder...';
+    imgContainer.innerHTML = 'Đang tải...';
     pdfContainer.innerHTML = '';
-    currentImagesList = [];
 
-    if (!date) {
-        imgContainer.innerHTML = '<p style="color:gray;">Vui lòng chọn Ngày để xem ảnh.</p>';
-        return;
-    }
+    const apiUrl = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/data/${encodeURIComponent(ncc)}/${encodeURIComponent(date)}`;
 
-    const folderPath = `${encodeURIComponent(ncc)}/${encodeURIComponent(date)}/`;
-    
-    // Thử tìm file ảnh với các định dạng khác nhau (ưu tiên .jpg)
-    const imageFiles = ['Factory image.jpg', 'Factory image.jpeg', 'Factory image.png'];
-    let imageFound = false;
-
-    for (const fileName of imageFiles) {
-        const photoUrl = `${BASE_URL}${folderPath}${encodeURIComponent(fileName)}`;
-        try {
-            const res = await fetch(photoUrl, { method: 'HEAD' });
-            if (res.ok) {
-                currentImagesList.push(photoUrl);
-                imgContainer.innerHTML = `<img src="${photoUrl}" class="thumb-img" onclick="openModal(0)" style="max-height:250px; border-radius:8px; cursor:pointer; border: 2px solid #00f2ff;">`;
-                imageFound = true;
-                break; 
-            }
-        } catch (e) {}
-    }
-
-    if (!imageFound) {
-        imgContainer.innerHTML = `<p style="color:#888;">Không thấy ảnh (.jpg/.png) trong folder ${date}</p>`;
-    }
-
-    // Xử lý file PDF
-    const pdfUrl = `${BASE_URL}${folderPath}Evaluation_Report.pdf`;
     try {
-        const resPdf = await fetch(pdfUrl, { method: 'HEAD' });
-        if (resPdf.ok) {
-            pdfContainer.innerHTML = `<a href="${pdfUrl}" target="_blank" style="display:inline-block; padding:10px; background:#00334e; color:#00f2ff; border-radius:5px; text-decoration:none;">📄 Xem Hồ sơ đánh giá & Khắc phục (${date})</a>`;
-        } else {
-            pdfContainer.innerHTML = '<p style="color:gray;">Không có file PDF cho ngày này.</p>';
-        }
-    } catch (e) {}
+        const response = await fetch(apiUrl);
+        if (!response.ok) throw new Error("Folder trống");
+        
+        const files = await response.json();
+        imgContainer.innerHTML = '';
+
+        files.forEach(file => {
+            const fileName = file.name.toLowerCase();
+            const fileUrl = file.download_url;
+
+            if (fileName.endsWith('.jpg') || fileName.endsWith('.png') || fileName.endsWith('.jpeg')) {
+                const img = document.createElement('img');
+                img.src = fileUrl;
+                img.style = "max-height:150px; margin:5px; border-radius:5px; cursor:zoom-in; border:1px solid #444;";
+                // Thay đổi: Mở to tại chỗ thay vì mở tab mới
+                img.onclick = () => openModal(fileUrl);
+                imgContainer.appendChild(img);
+            } 
+            else if (fileName.endsWith('.pdf')) {
+                // Thay đổi: Mở tab mới để xem trước
+                pdfContainer.innerHTML += `
+                    <a href="${fileUrl}" target="_blank" rel="noopener noreferrer" 
+                       style="display:inline-block; margin:5px; padding:12px 20px; background:#0056b3; color:#fff; border-radius:5px; text-decoration:none; font-weight:bold; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
+                        📄 Mở Báo Cáo PDF (Tab mới)
+                    </a>`;
+            }
+        });
+    } catch (error) {
+        imgContainer.innerHTML = '<p style="color:gray;">Không có dữ liệu media cho đợt này.</p>';
+    }
 }
 
 /* ============================================================
    5. XỬ LÝ MODAL ẢNH (PHÓNG TO)
    ============================================================ */
-function openModal(index) {
-    const modal = document.getElementById("imageModal");
-    const modalImg = document.getElementById("imgFull");
-    if (modal && modalImg) {
-        modal.style.display = "flex";
-        modalImg.src = currentImagesList[index];
-    }
+function openModal(src) {
+    document.getElementById('imageModal').style.display = "block";
+    document.getElementById('imgFull').src = src;
 }
 
 function closeModal() {
-    document.getElementById("imageModal").style.display = "none";
+    document.getElementById('imageModal').style.display = "none";
 }
 
 function moveSlider(direction) {
-    const container = document.getElementById('factory-images');
+    const container = document.getElementById('imageModal');
     container.scrollLeft += direction * 200;
 }
